@@ -5,12 +5,27 @@ from .state import SearchState
 
 def answer() -> rx.Component:
     return rx.cond(
+        SearchState.is_loading,
+        rx.flex(
+            rx.spinner(size="3"),
+            justify="center",
+            align="center",
+            padding="2em"
+        ),
+        rx.cond(
             SearchState.response,  
             rx.flex(
                 rx.box(
                     rx.text(
                         SearchState.response,
                         font_size="16px",
+                        font_weight="normal",
+                        color="#333333",
+                        padding="1em",
+                    ),
+                    rx.text(
+                        "Obs.: Essa resposta foi gerada por IA, então pode não ser 100% precisa. Se precisar de mais informações, clique em um dos links abaixo.",
+                        font_size="12px",
                         font_weight="normal",
                         color="#333333",
                         padding="1em",
@@ -53,7 +68,8 @@ def answer() -> rx.Component:
                 padding="1em",
             ),
             rx.box(), 
-        )
+        ),
+    )
 
 def upper_area() -> rx.Component:
     return rx.flex( #parte superior como um todo -> vertical
@@ -151,6 +167,8 @@ def center() -> rx.Component:
             variant="soft",
             size="2",
             color_scheme="gray",
+            justify="center",
+            align="center",
         ),
         rx.flex(
             rx.card(
@@ -390,6 +408,7 @@ def center() -> rx.Component:
         padding_top="2em",
         width="50%",
         padding_bottom="2em",
+        align="center",
     )
 
 def meajuda() -> rx.Component:

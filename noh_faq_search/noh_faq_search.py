@@ -17,7 +17,7 @@ app = rx.App(
 )
 
 #Website Pages
-app.add_page(pages.meajuda, navigation.routes.HOME_ROUTE, title="meajuda", on_load=SearchState.reset_state,)
+app.add_page(pages.meajuda, navigation.routes.HOME_ROUTE, title="meajuda", on_load=SearchState.reset_state)
 
 
 

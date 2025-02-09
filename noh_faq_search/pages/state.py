@@ -76,7 +76,7 @@ class SearchState(rx.State):
         )
 
         system_template = """TAREFA:
-            Você é um assistente para pergunta-resposta (Q&A), seu papel é responder dúvidas de visitantes no website da Noh. Noh é um banco digital que oferece conta financeira para apenas para casais.
+            Você é um assistente para pergunta-resposta (Q&A), seu papel é responder dúvidas de visitantes no website da Noh. A Noh é um banco digital que oferece conta financeira para apenas para casais.
             Como contexto, serão fornecidos 3 artigos da central de ajuda da Noh obtidos via embeddings (RAG), ou seja, serão fornecidos os 3 artigos mais similares à pergunta do usuário. 
             INSTRUÇÕES:
             Responda EXCLUSIVAMENTE com base nos artigos fornecidos como contexto, NÃO invente informações sobre a conta Noh. Se você achar que os conteúdos dos artigos fornecidos não são suficientes para responder a pergunta do usuário, apenas diga que não é capaz de responder no momento. 
@@ -96,10 +96,15 @@ class SearchState(rx.State):
     
     def handle_search(self):
         print(f"[handle_search] Pergunta recebida: {self.user_question}")
+        self.is_loading = True
+        yield
         self.response = ""
         self.search_results_metadata = []
-        self.query_pinecone()
-        print(f"[handle_search] Resultados da busca: {self.search_results_metadata}")
-        self.generate_response()
-        print(f"[handle_search] Resposta gerada: {self.response}")
+        try:
+            self.query_pinecone()
+            print(f"[handle_search] Resultados da busca: {self.search_results_metadata}")
+            self.generate_response()
+            print(f"[handle_search] Resposta gerada: {self.response}")
+        finally:
+            self.is_loading = False
 
