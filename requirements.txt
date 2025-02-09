@@ -1,0 +1,16 @@
+#gerais
+python-dotenv
+pandas
+requests
+#scraping:
+beautifulsoup4
+#embeddings e IA
+pinecone
+pinecone-client
+langchain_openai
+langchain_pinecone
+langchain_core
+langchain
+#app
+streamlit
+reflex

@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.web
+*.db
+assets/external/
+.env
+
+articles_scraping/scraping.ipynb
+articles_scraping/noh_faq_completo.json
+articles_scraping/noh_faq_teste_2.json
+articles_scraping/noh_faq_teste.json
