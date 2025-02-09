@@ -1,7 +1,6 @@
 import reflex as rx
 
 from ..ui import footer
-from ..navigation import routes
 from .state import SearchState
 
 def answer() -> rx.Component:

@@ -4,6 +4,7 @@ __pycache__/
 *.db
 assets/external/
 .env
+venv/
 
 articles_scraping/scraping.ipynb
 articles_scraping/noh_faq_completo.json

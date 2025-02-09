@@ -1,4 +1,5 @@
-HOME_ROUTE="/meajuda"
+#HOME_ROUTE="/meajuda"
+HOME_ROUTE="/"
 SOBRE_ROUTE="/ajuda-categorias/sobre-nohs"
 CONTA_ROUTE="/ajuda-categorias/conta"
 CARTAO_ROUTE="/ajuda-categorias/cartao-noh"

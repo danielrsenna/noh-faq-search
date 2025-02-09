@@ -1,7 +1,7 @@
 import reflex as rx
 import os
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
