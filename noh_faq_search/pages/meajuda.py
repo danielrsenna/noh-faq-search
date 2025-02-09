@@ -15,6 +15,17 @@ def answer() -> rx.Component:
         rx.cond(
             SearchState.response,  
             rx.flex(
+                rx.flex(
+                    rx.button(
+                        "Limpar Resultados",
+                        size="1",
+                        variant="soft",
+                        color_scheme="red",
+                        #on_click=SearchState.reset_state
+                        on_click=[SearchState.reset_state,rx.set_value("input_user_question", "")]
+                    ),
+                    padding_bottom="1em",
+                ),
                 rx.box(
                     rx.text(
                         SearchState.response,
@@ -136,6 +147,7 @@ def upper_area() -> rx.Component:
                 radius="large",
                 color_scheme="lime",
                 on_change=SearchState.set_user_question,
+                id="input_user_question",
             ),
             rx.button(
                 "Pesquisar", 
@@ -144,6 +156,7 @@ def upper_area() -> rx.Component:
                 size="2",
                 variant="solid",
                 height="3em",
+                disabled=SearchState.user_question == "",
                 on_click=SearchState.handle_search
             ),
             justify="center",

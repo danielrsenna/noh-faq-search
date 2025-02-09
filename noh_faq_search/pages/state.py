@@ -32,6 +32,7 @@ class SearchState(rx.State):
         self.contexto_rag = ""
         self.response = ""
         self.search_results_metadata = []
+        yield
         
     def set_user_question(self, value: str):
         self.user_question = value
