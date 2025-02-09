@@ -1,6 +1,7 @@
 # noh-faq-search
 
-Contexto:
+<details>
+  <summary>Contexto</summary>
 
 Descobri a Noh no Linkedin por acaso (tenho usado muito LinkedIn já que estou procurando emprego). Olhei o linkedin do CTO e ele me pareceu um cara peculiar, o que acho incrível, também vi que é uma empresa com mulheres na liderança, o que também acho muito positivo. Então resolvi checar se haviam vagas abertas.
 
@@ -11,6 +12,11 @@ Fuçando o site notei uma "dor" na parte de "Ajuda". A central de ajuda é divid
 O usuário então clica no artigo e isso o direciona para a sua respectiva página contendo Título (a Pergunta), conteúdo (a Resposta) e links para artigos relacionados. Ou seja, o cliente precisa, sozinho, se direcionar até encontrar o artigo (ou os artigos) que vá sanar sua dúvida, precisa desbravar dentre os possíveis caminhos, por tentativa e erro, até achar a resposta. 
 
 Em nenhum momento há um campo de busca digitável que, uma vez feita a busca, retorna os artigos mais relacionados ou, até mesmo, uma resposta gerada com IA. Resolvi então ajudar nisso, talvez não seja um problema crítico para a Noh, mas a estrutura por trás dessa solução pode ser aplicada em outros problemas que envolvam IA Generativa + RAG. 
+
+</details>
+
+<details>
+  <summary>Planejamento</summary>
 
 1ª Etapa Web Scraping:
 Obtenção dos dados:
@@ -30,6 +36,11 @@ Desenvolver um web app simples que simule a página de ajuda da Noh (design simi
 5ª Etapa Reflex Plus:
 Quero conectar isso em uma base de dados para possibilitar informação de artigos mais acessados (uma FAQ de fato). Também, com isso, possibilitar testar versões diferentes de soluções para a busca (estilo experimentação, teste A/B), por exemplo testando modelos de embeddings diferentes.
 
+</details>
+
+<details>
+  <summary>Passos futuros</summary>
+
 Futuro:
 Como essa solução é um protótipo, usei ferramentas mais conhecidas e fáceis de implementar. Porém poderíamos explorar algumas melhorias, como:
 - Outras opções de Vector Database, além do Pinecone;
@@ -40,4 +51,4 @@ Como essa solução é um protótipo, usei ferramentas mais conhecidas e fáceis
 - Conferir se as respostas geras por IA são confiáveis;
 - Qual o custo atrelado ao uso de IA Generativa para essa busca, bem como num futuro com base em aumento de número de clientes (e consequentemente buscas no Ajuda)
 
-
+</details>
