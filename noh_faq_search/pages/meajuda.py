@@ -34,24 +34,31 @@ def answer() -> rx.Component:
                             ),
                         ),
                         rx.popover.content(
-                            rx.hstack(
-                                rx.button(
-                                    rx.icon(
-                                        tag="thumbs-up",
+                            rx.flex(    
+                                rx.flex(
+                                    rx.button(
+                                        rx.icon(
+                                            tag="thumbs-up",
+                                        ),
+                                        size="1",
+                                        variant="ghost",
+                                        color_scheme="gray",
                                     ),
-                                    size="1",
-                                    variant="ghost",
-                                    color_scheme="gray",
-                                ),
-                                rx.button(
-                                    rx.icon(
-                                        tag="thumbs-down",
+                                    rx.button(
+                                        rx.icon(
+                                            tag="thumbs-down",
+                                        ),
+                                        size="1",
+                                        variant="ghost",
+                                        color_scheme="gray",
                                     ),
-                                    size="1",
-                                    variant="soft",
-                                    color_scheme="gray",
-                                ),
-                            ),                                
+                                    align="center",
+                                    justify="center",
+                                ), 
+                                rx.flex(
+                                    rx.button()
+                                ),    
+                            ),                           
                         ),
                     ),
                     padding_bottom="1em",
