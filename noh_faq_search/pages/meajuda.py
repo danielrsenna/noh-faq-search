@@ -24,7 +24,21 @@ def answer() -> rx.Component:
                         #on_click=SearchState.reset_state
                         on_click=[SearchState.reset_state,rx.set_value("input_user_question", "")]
                     ),
+                    rx.popover.root(
+                        rx.popover.trigger(
+                            rx.button("Isso te ajudou?"),
+                            ),
+                        rx.popover.content(
+                            rx.hstack(
+                                thumb_card(1, "thumbs-up"),
+                                thumb_card(0, "thumbs-down"),
+                                gap="8px",
+                            ),
+                    ),
+                    ),
                     padding_bottom="1em",
+                    justify="between",
+                    align="center",
                 ),
                 rx.box(
                     rx.text(
