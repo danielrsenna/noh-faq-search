@@ -26,15 +26,33 @@ def answer() -> rx.Component:
                     ),
                     rx.popover.root(
                         rx.popover.trigger(
-                            rx.button("Isso te ajudou?"),
+                            rx.button(
+                                "Isso te ajudou?", 
+                                size="1",
+                                variant="soft",
+                                color_scheme="blue",
                             ),
+                        ),
                         rx.popover.content(
                             rx.hstack(
-                                thumb_card(1, "thumbs-up"),
-                                thumb_card(0, "thumbs-down"),
-                                gap="8px",
-                            ),
-                    ),
+                                rx.button(
+                                    rx.icon(
+                                        tag="thumbs-up",
+                                    ),
+                                    size="1",
+                                    variant="ghost",
+                                    color_scheme="gray",
+                                ),
+                                rx.button(
+                                    rx.icon(
+                                        tag="thumbs-down",
+                                    ),
+                                    size="1",
+                                    variant="soft",
+                                    color_scheme="gray",
+                                ),
+                            ),                                
+                        ),
                     ),
                     padding_bottom="1em",
                     justify="between",
@@ -92,7 +110,7 @@ def answer() -> rx.Component:
                 spacing="2",
                 padding="1em",
             ),
-            rx.box(), 
+            rx.box(),
         ),
     )
 
