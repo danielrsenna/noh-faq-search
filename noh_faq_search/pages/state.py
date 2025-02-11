@@ -6,10 +6,21 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 
+import supabase
+from supabase import create_client
+
 # Carregar variáveis de ambiente
 load_dotenv()
 pinecone_api_key = os.environ.get("PINECONE_API_KEY")
 pc = Pinecone(api_key=pinecone_api_key)
+
+
+def supabase_client():
+    # setup supabase
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_KEY")
+    client = supabase.Client(supabase_url, supabase_key)
+    return client
 
 index_large = pc.Index("noh-faq-index-3072")
 embeddings_large = OpenAIEmbeddings(model="text-embedding-3-large")

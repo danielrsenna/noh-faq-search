@@ -54,10 +54,28 @@ def answer() -> rx.Component:
                                     ),
                                     align="center",
                                     justify="center",
+                                    spacing="3",
                                 ), 
                                 rx.flex(
-                                    rx.button()
-                                ),    
+                                    rx.button(
+                                        "Enviar",
+                                        size="2",
+                                        width="5em",
+                                        color_scheme="lime",
+                                    ),
+                                    rx.button(
+                                        "Cancelar",
+                                        size="2",
+                                        width="5em",
+                                        color_scheme="gray",
+                                    ),
+                                    justify="between",
+                                ),   
+                                direction="column" ,
+                                spacing="2",
+                                width="10em",
+                                align="center",
+                                justify="between",
                             ),                           
                         ),
                     ),
@@ -141,7 +159,7 @@ def upper_area() -> rx.Component:
             rx.flex( #logo
                 rx.text(
                     "ATENÇÃO: ESSE NÃO É O SITE OFICIAL DA NOH!!!",
-                    font_size="14px",
+                    font_size="1em",
                     font_weight=400,
                     font_family= "sans-serif",
                     color="red",  
@@ -151,7 +169,7 @@ def upper_area() -> rx.Component:
                 rx.link( #botão entrar
                     rx.text(
                         "Bloquear conta",
-                        font_size="14px",
+                        font_size="1em",
                         font_weight=400,
                         font_family= "sans-serif",
                         color="#222222",  
@@ -164,13 +182,13 @@ def upper_area() -> rx.Component:
             justify="between",
             align="center",
             padding_top="1em", 
-            padding_left="26em", 
-            padding_right="26em", 
+            padding_left="20em", 
+            padding_right="20em", 
         ),
         rx.flex( #titulozão
             rx.text(
                 "Oi, veja como aproveitar melhor a Noh",
-                font_size="32px",
+                font_size="2em",
                 font_weight=150,
                 font_family= "sans-serif",
                 color="#222222",  
