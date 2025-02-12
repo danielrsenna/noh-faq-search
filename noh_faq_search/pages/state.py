@@ -8,8 +8,11 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 from .supabase_client import supabase_client
+import logging
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class ArtigoMetadata(rx.Base):
     titulo_artigo: str
@@ -41,7 +44,7 @@ class SearchState(rx.State):
         self.user_question = value
 
     def query_pinecone(self):
-        print(f"[query_pinecone] Iniciando busca para: {self.user_question}")
+        logging.debug(f"[query_pinecone] Iniciando busca para: {self.user_question}")
         pinecone_api_key = os.environ.get("PINECONE_API_KEY")
         pc = Pinecone(api_key=pinecone_api_key)
         index_large = pc.Index("noh-faq-index-3072")
@@ -49,11 +52,11 @@ class SearchState(rx.State):
         vector_store_large = PineconeVectorStore(index=index_large, embedding=embeddings_large)
 
         results_large = vector_store_large.similarity_search_with_score(self.user_question, k=5)
-        print(f"[query_pinecone] Resultados encontrados: {len(results_large)}")
+        logging.info(f"[query_pinecone] Resultados encontrados: {len(results_large)}")
         
         if not results_large:
             self.contexto_rag = "Não foi possível encontrar artigos relacionados à sua pergunta."
-            print("[query_pinecone] Nenhum resultado relevante.")
+            logging.info("[query_pinecone] Nenhum resultado relevante.")
             return
 
         artigos_metadata = []
@@ -72,7 +75,7 @@ class SearchState(rx.State):
 
         self.contexto_rag = contexto
         self.search_results_metadata = artigos_metadata
-        print(f"[query_pinecone] Metadados coletados: {self.search_results_metadata}")
+        logging.debug(f"[query_pinecone] Metadados coletados: {self.search_results_metadata}")
 
     def generate_response(self):
         if not self.contexto_rag or self.contexto_rag == "Não foi possível encontrar artigos relacionados à sua pergunta.":
@@ -104,7 +107,7 @@ class SearchState(rx.State):
         self.response = response.content
 
     def handle_search(self):
-        print(f"[handle_search] Pergunta recebida: {self.user_question}")
+        logging.debug(f"[handle_search] Pergunta recebida: {self.user_question}")
         self.is_loading = True
         self.search_id = str(uuid.uuid4())
         search_start_time = datetime.datetime.now(datetime.timezone.utc)
@@ -115,10 +118,10 @@ class SearchState(rx.State):
         try:
             self.query_pinecone()
             embeddings_results_time = datetime.datetime.now(datetime.timezone.utc)
-            print(f"[handle_search] Resultados da busca: {self.search_results_metadata}")
+            logging.debug(f"[handle_search] Resultados da busca: {self.search_results_metadata}")
             self.generate_response()
             ia_response_time = datetime.datetime.now(datetime.timezone.utc)
-            print(f"[handle_search] Resposta gerada: {self.response}")
+            logging.debug(f"[handle_search] Resposta gerada: {self.response}")
             self.insert_log(search_start_time, embeddings_results_time, ia_response_time)
         finally:
             self.is_loading = False
@@ -128,22 +131,22 @@ class SearchState(rx.State):
             try:
                 response = supabase_client().table("search_log").update({"result_helpful": True}).eq("search_id", self.search_id).execute()
                 self.feedback_sent = True
-                print(f"Feedback enviado com sucesso! Response: {response.data}")
+                logging.debug(f"Feedback enviado com sucesso! Response: {response.data}")
             except Exception as e:
-                print(f"Erro ao enviar feedback: {e}")
+                logging.error(f"Erro ao enviar feedback: {e}")
         else:
-            print("Nenhum search_id encontrado para enviar o feedback.")
+            logging.warning("Nenhum search_id encontrado para enviar o feedback.")
 
     def send_negative_feedback(self):
         if self.search_id:
             try:
                 response = supabase_client().table("search_log").update({"result_helpful": False}).eq("search_id", self.search_id).execute()
                 self.feedback_sent = True
-                print(f"Feedback enviado com sucesso! Response: {response.data}")
+                logging.debug(f"Feedback enviado com sucesso! Response: {response.data}")
             except Exception as e:
-                print(f"Erro ao enviar feedback: {e}")
+                logging.error(f"Erro ao enviar feedback: {e}")
         else:
-            print("Nenhum search_id encontrado para enviar o feedback.")
+            logging.warning("Nenhum search_id encontrado para enviar o feedback.")
 
     def insert_log(self, search_start_time, embeddings_results_time, ia_response_time):
         log_data = {
@@ -169,7 +172,7 @@ class SearchState(rx.State):
         }
         try:
             response = supabase_client().table("search_log").insert(log_data).execute()
-            print(f"Log inserido com sucesso! Response: {response.data}")
+            logging.info(f"Log inserido com sucesso! Response: {response.data}")
         except Exception as e:
-            print(f"Erro ao inserir log no Supabase: {e}")
+            logging.error(f"Erro ao inserir log no Supabase: {e}")
 
