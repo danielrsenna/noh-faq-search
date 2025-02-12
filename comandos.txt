@@ -1,5 +1,9 @@
+#apenas uma pesca de alguns comando que pego com o chatgpt
+conda deactivate
+Remove-Item -Recurse -Force venv
+python --version
 python -m venv venv
-.\venv\Scripts\Activate
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\venv\Scripts\Activate
 pip install -r requirements.txt
+pip freeze > requirements_full.txt

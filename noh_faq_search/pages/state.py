@@ -7,33 +7,23 @@ from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
+from .supabase_client import supabase_client
 
-import supabase
-from supabase import create_client
-
-def supabase_client():
-    supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_KEY")
-    
-    if not supabase_url or not supabase_key:
-        raise ValueError("Variáveis de ambiente SUPABASE_URL e SUPABASE_KEY não estão configuradas.")
-    
-    client = create_client(supabase_url, supabase_key)
-    return client
-
-# Carregar variáveis de ambiente
 load_dotenv()
-pinecone_api_key = os.environ.get("PINECONE_API_KEY")
-pc = Pinecone(api_key=pinecone_api_key)
 
-index_large = pc.Index("noh-faq-index-3072")
-embeddings_large = OpenAIEmbeddings(model="text-embedding-3-large")
-vector_store_large = PineconeVectorStore(index=index_large, embedding=embeddings_large)
+# pinecone_api_key = os.environ.get("PINECONE_API_KEY")
+# pc = Pinecone(api_key=pinecone_api_key)
+
+# index_large = pc.Index("noh-faq-index-3072")
+# embeddings_large = OpenAIEmbeddings(model="text-embedding-3-large")
+# vector_store_large = PineconeVectorStore(index=index_large, embedding=embeddings_large)
 
 class ArtigoMetadata(rx.Base):
     titulo_artigo: str
     titulo_categoria: str
     url_artigo: str
+    vector_score: float
+    vector_id: str
 
 class SearchState(rx.State):
     user_question: str = ""
@@ -41,7 +31,7 @@ class SearchState(rx.State):
     response: str = ""
     search_results_metadata: list[ArtigoMetadata] = []
     is_loading: bool = False
-    search_id = str
+    search_id: str = ""
     result_helpful: bool = None
     feedback_given: str = None
 
@@ -50,42 +40,54 @@ class SearchState(rx.State):
         self.contexto_rag = ""
         self.response = ""
         self.search_results_metadata = []
+        self.search_id = ""
+        self.result_helpful = None
+        self.feedback_given = None
+        self.is_loading = False
         yield
         
     def set_user_question(self, value: str):
         self.user_question = value
 
     def query_pinecone(self):
-        #self.is_loading = True
         print(f"[query_pinecone] Iniciando busca para: {self.user_question}")
+        pinecone_api_key = os.environ.get("PINECONE_API_KEY")
+        pc = Pinecone(api_key=pinecone_api_key)
+        index_large = pc.Index("noh-faq-index-3072")
+        embeddings_large = OpenAIEmbeddings(model="text-embedding-3-large")
+        vector_store_large = PineconeVectorStore(index=index_large, embedding=embeddings_large)
+
         results_large = vector_store_large.similarity_search_with_score(self.user_question, k=5)
         print(f"[query_pinecone] Resultados encontrados: {len(results_large)}")
-        artigos_metadata = []
-
+        
         if not results_large:
             self.contexto_rag = "Não foi possível encontrar artigos relacionados à sua pergunta."
             print("[query_pinecone] Nenhum resultado relevante.")
             return
 
+        artigos_metadata = []
         contexto = ""
+
         for i in results_large:
             titulo = i[0].metadata["titulo_artigo"]
             conteudo = i[0].metadata["conteudo_artigo"]
             url = i[0].metadata["url_artigo"]
             categoria = i[0].metadata["titulo_categoria"]
+            score = i[1]
+            id = i[0].id
 
             contexto += f"Título do Artigo: {titulo}\nConteúdo: {conteudo}\n\n"
-            artigos_metadata.append(ArtigoMetadata(titulo_artigo=titulo, titulo_categoria=categoria, url_artigo=url))
-        
+            artigos_metadata.append(ArtigoMetadata(titulo_artigo=titulo, titulo_categoria=categoria, url_artigo=url, vector_score=score, vector_id=id))
+
         self.contexto_rag = contexto
         self.search_results_metadata = artigos_metadata
         print(f"[query_pinecone] Metadados coletados: {self.search_results_metadata}")
 
     def generate_response(self):
-        #self.is_loading = True
         if not self.contexto_rag or self.contexto_rag == "Não foi possível encontrar artigos relacionados à sua pergunta.":
             self.response = "Desculpe, não consegui encontrar informações suficientes para responder sua pergunta."
             return
+
         llm = ChatOpenAI(
             model="gpt-4o-mini",
             temperature=0.6,
@@ -105,49 +107,43 @@ class SearchState(rx.State):
 
             Artigos da Central de Ajuda:\n{contexto}"""
 
-        prompt_template = ChatPromptTemplate.from_messages(
-            [("system", system_template), ("user", "{user_question}")]
-        )
-
+        prompt_template = ChatPromptTemplate.from_messages([("system", system_template), ("user", "{user_question}")])
         prompt = prompt_template.invoke({"contexto": self.contexto_rag, "user_question": self.user_question})
         response = llm.invoke(prompt)
         self.response = response.content
-    
+
     def handle_search(self):
         print(f"[handle_search] Pergunta recebida: {self.user_question}")
         self.is_loading = True
-        self.search_id = str(uuid.uuid4())  # Gera um search_id único
-        search_start_time = datetime.datetime.utcnow()  # Horário de início da busca
+        self.search_id = str(uuid.uuid4())
+        search_start_time = datetime.datetime.now(datetime.timezone.utc)
         yield
         self.response = ""
         self.search_results_metadata = []
 
         try:
             self.query_pinecone()
-            embeddings_results_time = datetime.datetime.utcnow()  # Após obter resultados dos embeddings
+            embeddings_results_time = datetime.datetime.now(datetime.timezone.utc)
             print(f"[handle_search] Resultados da busca: {self.search_results_metadata}")
             self.generate_response()
-            ia_response_time = datetime.datetime.utcnow()  # Após resposta da IA
+            ia_response_time = datetime.datetime.now(datetime.timezone.utc)
             print(f"[handle_search] Resposta gerada: {self.response}")
             self.insert_log(search_start_time, embeddings_results_time, ia_response_time)
         finally:
             self.is_loading = False
     
-    def set_feedback(self, value: str):
-        """Define o feedback ('up' ou 'down') e altera o estado visual."""
-        self.feedback_given = value
+    def set_feedback(self, value: str): #define o feedback ('up' ou 'down') e altera o estado visual.
+        self.feedback_given = value 
         print(f"Feedback recebido: {self.feedback_given}")
-        yield  # Força a atualização visual.
+        yield 
 
-    def is_feedback_selected(self, value: str) -> bool:
-        """Verifica se o feedback atual corresponde ao valor passado ('up' ou 'down')."""
-        return self.feedback_given == value
-    
+    def is_feedback_selected(self, value: str) -> bool: #verifica se o feedback atual corresponde ao valor passado ('up' ou 'down')
+        return self.feedback_given == value 
+
     def send_feedback(self):
-        client = supabase_client()
         if self.search_id:
             try:
-                response = client.table("search_log").update({"result_helpful": self.result_helpful}).eq("search_id", self.search_id).execute()
+                response = supabase_client().table("search_log").update({"result_helpful": self.result_helpful}).eq("search_id", self.search_id).execute()
                 print(f"Feedback enviado com sucesso! Response: {response.data}")
             except Exception as e:
                 print(f"Erro ao enviar feedback: {e}")
@@ -155,26 +151,29 @@ class SearchState(rx.State):
             print("Nenhum search_id encontrado para enviar o feedback.")
 
     def insert_log(self, search_start_time, embeddings_results_time, ia_response_time):
-        """Insere a busca e o resultado no Supabase."""
-        client = supabase_client()
         log_data = {
             "search_id": self.search_id,
             "user_question": self.user_question,
-            "embeddings_results": [  # Lista de dicionários com título e URL
-                {#preciso adicionar o id do vetor e também o score da consulta <--------
+            "embeddings_results": [
+                {
                     "titulo_artigo": artigo.titulo_artigo,
-                    "url_artigo": artigo.url_artigo
+                    "url_artigo": artigo.url_artigo,
+                    "id_vetor": artigo.vector_id,
+                    "score_vetor": artigo.vector_score
                 }
                 for artigo in self.search_results_metadata
             ],
             "ia_answer": self.response,
-            "search_at": search_start_time,
-            "embeddings_results_at": embeddings_results_time,
-            "ia_response_at": ia_response_time,
-            "model_used": "gpt-4o-mini"  # Ou outro modelo usado
+            "search_at": search_start_time.isoformat(),
+            "embeddings_results_at": embeddings_results_time.isoformat(),
+            "ia_response_at": ia_response_time.isoformat(),
+            "model_used": {
+                "embeddings": "text-embedding-3-large",
+                "ia": "gpt-4o-mini"
+            }
         }
         try:
-            response = client.table("search_log").insert(log_data).execute()
+            response = supabase_client().table("search_log").insert(log_data).execute()
             print(f"Log inserido com sucesso! Response: {response.data}")
         except Exception as e:
             print(f"Erro ao inserir log no Supabase: {e}")

@@ -21,7 +21,6 @@ def answer() -> rx.Component:
                         size="1",
                         variant="soft",
                         color_scheme="red",
-                        #on_click=SearchState.reset_state
                         on_click=[SearchState.reset_state,rx.set_value("input_user_question", "")]
                     ),
                     rx.popover.root(
@@ -134,6 +133,35 @@ def answer() -> rx.Component:
 
 def upper_area() -> rx.Component:
     return rx.flex( #parte superior como um todo -> vertical
+        rx.flex(
+            rx.flex( 
+                rx.link( 
+                    rx.text(
+                        "Dashboard",
+                        font_size="1em",
+                        font_weight=400,
+                        font_family= "sans-serif",
+                        color="#222222",  
+                    ),
+                    href="/dashboard-dados",
+                    is_external=True,
+                ),
+            ),
+            rx.flex( 
+                rx.text(
+                    "ATENÇÃO: ESSE NÃO É O SITE OFICIAL DA NOH!!!",
+                    font_size="1em",
+                    font_weight=400,
+                    font_family= "sans-serif",
+                    color="red",  
+                ),
+            ),
+            justify="between",
+            align="center",
+            padding_top="1em", 
+            padding_left="20em", 
+            padding_right="20em", 
+        ),
         rx.flex( #linha superior com logo e Bloquear conta -> horizontal
             rx.flex( #logo
                 rx.link( #logo
@@ -148,15 +176,6 @@ def upper_area() -> rx.Component:
                     is_external=True,
                 ),
                 #spacing="2",
-            ),
-            rx.flex( #logo
-                rx.text(
-                    "ATENÇÃO: ESSE NÃO É O SITE OFICIAL DA NOH!!!",
-                    font_size="1em",
-                    font_weight=400,
-                    font_family= "sans-serif",
-                    color="red",  
-                ),
             ),
             rx.flex( #bloquear conta
                 rx.link( #botão entrar
