@@ -11,13 +11,6 @@ from .supabase_client import supabase_client
 
 load_dotenv()
 
-# pinecone_api_key = os.environ.get("PINECONE_API_KEY")
-# pc = Pinecone(api_key=pinecone_api_key)
-
-# index_large = pc.Index("noh-faq-index-3072")
-# embeddings_large = OpenAIEmbeddings(model="text-embedding-3-large")
-# vector_store_large = PineconeVectorStore(index=index_large, embedding=embeddings_large)
-
 class ArtigoMetadata(rx.Base):
     titulo_artigo: str
     titulo_categoria: str
