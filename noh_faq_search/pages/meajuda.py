@@ -37,24 +37,22 @@ def answer() -> rx.Component:
                             rx.flex(    
                                 rx.flex(
                                     rx.button(
-                                        rx.icon(
-                                            tag="thumbs-up",
-                                        ),
+                                        rx.icon(tag="thumbs-up"),
                                         size="1",
                                         variant="ghost",
-                                        color_scheme="gray",
+                                        color_scheme=rx.cond(SearchState.is_feedback_selected("up"), "green", "gray"),
+                                        on_click=lambda: SearchState.set_feedback("up"),
                                     ),
                                     rx.button(
-                                        rx.icon(
-                                            tag="thumbs-down",
-                                        ),
+                                        rx.icon(tag="thumbs-down"),
                                         size="1",
                                         variant="ghost",
-                                        color_scheme="gray",
+                                        color_scheme=rx.cond(SearchState.is_feedback_selected("down"), "red", "gray"),
+                                        on_click=lambda: SearchState.set_feedback("down"),
                                     ),
                                     align="center",
-                                    justify="center",
-                                    spacing="3",
+                                    justify="between",
+                                    spacing="4",
                                 ), 
                                 rx.flex(
                                     rx.button(
@@ -62,18 +60,13 @@ def answer() -> rx.Component:
                                         size="2",
                                         width="5em",
                                         color_scheme="lime",
-                                    ),
-                                    rx.button(
-                                        "Cancelar",
-                                        size="2",
-                                        width="5em",
-                                        color_scheme="gray",
+                                        on_click=SearchState.send_feedback,
                                     ),
                                     justify="between",
                                 ),   
                                 direction="column" ,
                                 spacing="2",
-                                width="10em",
+                                width="5em",
                                 align="center",
                                 justify="between",
                             ),                           
