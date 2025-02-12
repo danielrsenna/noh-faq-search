@@ -24,9 +24,8 @@ class SearchState(rx.State):
     response: str = ""
     search_results_metadata: list[ArtigoMetadata] = []
     is_loading: bool = False
+    feedback_sent: bool = False
     search_id: str = ""
-    result_helpful: bool = None
-    feedback_given: str = None
 
     def reset_state(self):
         self.user_question = ""
@@ -34,9 +33,8 @@ class SearchState(rx.State):
         self.response = ""
         self.search_results_metadata = []
         self.search_id = ""
-        self.result_helpful = None
-        self.feedback_given = None
         self.is_loading = False
+        self.feedback_sent: bool = False
         yield
         
     def set_user_question(self, value: str):
@@ -124,19 +122,23 @@ class SearchState(rx.State):
             self.insert_log(search_start_time, embeddings_results_time, ia_response_time)
         finally:
             self.is_loading = False
-    
-    def set_feedback(self, value: str): #define o feedback ('up' ou 'down') e altera o estado visual.
-        self.feedback_given = value 
-        print(f"Feedback recebido: {self.feedback_given}")
-        yield 
 
-    def is_feedback_selected(self, value: str) -> bool: #verifica se o feedback atual corresponde ao valor passado ('up' ou 'down')
-        return self.feedback_given == value 
-
-    def send_feedback(self):
+    def send_positive_feedback(self):
         if self.search_id:
             try:
-                response = supabase_client().table("search_log").update({"result_helpful": self.result_helpful}).eq("search_id", self.search_id).execute()
+                response = supabase_client().table("search_log").update({"result_helpful": True}).eq("search_id", self.search_id).execute()
+                self.feedback_sent = True
+                print(f"Feedback enviado com sucesso! Response: {response.data}")
+            except Exception as e:
+                print(f"Erro ao enviar feedback: {e}")
+        else:
+            print("Nenhum search_id encontrado para enviar o feedback.")
+
+    def send_negative_feedback(self):
+        if self.search_id:
+            try:
+                response = supabase_client().table("search_log").update({"result_helpful": False}).eq("search_id", self.search_id).execute()
+                self.feedback_sent = True
                 print(f"Feedback enviado com sucesso! Response: {response.data}")
             except Exception as e:
                 print(f"Erro ao enviar feedback: {e}")
