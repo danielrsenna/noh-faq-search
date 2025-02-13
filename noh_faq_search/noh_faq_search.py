@@ -4,6 +4,7 @@ import reflex as rx
 from . import pages
 from . import navigation
 from .pages.state import SearchState
+from .pages.dash_state import DashboardState
 
 app = rx.App(
     theme=rx.theme(
@@ -18,9 +19,6 @@ app = rx.App(
 
 #Website Pages
 app.add_page(pages.meajuda, navigation.routes.HOME_ROUTE, title="meajuda", on_load=SearchState.reset_state)
-app.add_page(pages.dash, navigation.routes.DASH_ROUTE, title="dashboard")
-
-
-
+app.add_page(pages.dash, navigation.routes.DASH_ROUTE, title="dashboard",on_load=DashboardState.load_all_data)
 
 
