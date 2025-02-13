@@ -12,9 +12,4 @@ articles_scraping/noh_faq_completo.json
 articles_scraping/noh_faq_teste_2.json
 articles_scraping/noh_faq_teste.json
 
-noh_faq_search/pages/boletos.py
-noh_faq_search/pages/cartao.py
-noh_faq_search/pages/conta.py
-noh_faq_search/pages/mensalidade.py
-noh_faq_search/pages/pix.py
-noh_faq_search/pages/sobre.py
+noh_faq_search/pages/tests.ipynb
