@@ -62,10 +62,11 @@ def main() -> rx.Component:
         direction="column",
         background_color="#ffffff",
         padding_top="2em",
-        width="50%",
+        width="90%",
         height="80vh",
         padding_bottom="2em",
-        align="center",
+        align="start",
+        spacing="2"
     )
 
 def total_searches_component() -> rx.Component:
@@ -76,7 +77,7 @@ def total_searches_component() -> rx.Component:
         padding="1em",
         background_color="#f5f5f5",
         border_radius="10px",
-        width="100%",
+        width="30%",
     )
 
 # def top_articles_table() -> rx.Component:
@@ -88,30 +89,15 @@ def total_searches_component() -> rx.Component:
 #             width="100%",
 #         )
 
-# def hourly_searches_chart() -> rx.Component:
-#     """Componente para exibir o gráfico de pesquisas por hora usando rx.cond."""
-#     return rx.recharts.line_chart(
-#             rx.recharts.line(data_key="Número de Pesquisas", name="Pesquisas", stroke="#8884d8"),
-#             rx.recharts.x_axis(data_key="Hora", name="Hora"),
-#             rx.recharts.y_axis(name="Número de Pesquisas"),
-#             rx.recharts.tooltip(),
-#             rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
-#             data=DashboardState.searches_by_hour_df.to_dict(orient="records"),
-#             width="100%",
-#             height=300,
-#         )
-
 def hourly_searches_chart() -> rx.Component:
+    """Componente para exibir o gráfico de pesquisas por hora usando rx.cond."""
     return rx.recharts.line_chart(
-        rx.recharts.line(
-            data_key="pesquisas",
-        ),
-        rx.recharts.x_axis(data_key="hora"),
-        rx.recharts.y_axis(),
-        data=DashboardState.searches_by_hour_df,
-        pagination=True,
-        search=True,
-        sort=True,
-        width="30%",
-        height="30%",
-    )
+            rx.recharts.line(data_key="pesquisas", name="Pesquisas", stroke="#8884d8"),
+            rx.recharts.x_axis(data_key="hora", name="Hora"),
+            rx.recharts.y_axis(name="Número de Pesquisas"),
+            rx.recharts.graphing_tooltip(),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
+            data=DashboardState.searches_by_hour_df,
+            width="50%",
+            height=300,
+        )
