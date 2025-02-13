@@ -4,6 +4,7 @@ import uuid
 import os
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from pinecone import Pinecone
+import random
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
@@ -29,6 +30,7 @@ class SearchState(rx.State):
     is_loading: bool = False
     feedback_sent: bool = False
     search_id: str = ""
+    selected_model: str = ""
 
     def reset_state(self):
         self.user_question = ""
@@ -43,18 +45,29 @@ class SearchState(rx.State):
     def set_user_question(self, value: str):
         self.user_question = value
 
+    def choose_embedding_model(self):
+        """Escolhe aleatoriamente entre 'small' e 'large'."""
+        self.selected_model = random.choice(["small", "large"])
+        print(f"Modelo selecionado: {self.selected_model}")
+
     def query_pinecone(self):
         logging.debug(f"[query_pinecone] Iniciando busca para: {self.user_question}")
         pinecone_api_key = os.environ.get("PINECONE_API_KEY")
         pc = Pinecone(api_key=pinecone_api_key)
-        index_large = pc.Index("noh-faq-index-3072")
-        embeddings_large = OpenAIEmbeddings(model="text-embedding-3-large")
-        vector_store_large = PineconeVectorStore(index=index_large, embedding=embeddings_large)
-
-        results_large = vector_store_large.similarity_search_with_score(self.user_question, k=5)
-        logging.info(f"[query_pinecone] Resultados encontrados: {len(results_large)}")
+        if self.selected_model == "large":
+            logging.info("[query_pinecone] Usando modelo large")
+            index = pc.Index("noh-faq-index-3072")
+            embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+        else:
+            logging.info("[query_pinecone] Usando modelo small")
+            index = pc.Index("noh-faq-index")
+            embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+            
+        vector_store = PineconeVectorStore(index=index, embedding=embeddings)
+        results = vector_store.similarity_search_with_score(self.user_question, k=5)
+        logging.info(f"[query_pinecone] Resultados encontrados: {len(results)}")
         
-        if not results_large:
+        if not results:
             self.contexto_rag = "Não foi possível encontrar artigos relacionados à sua pergunta."
             logging.info("[query_pinecone] Nenhum resultado relevante.")
             return
@@ -62,7 +75,7 @@ class SearchState(rx.State):
         artigos_metadata = []
         contexto = ""
 
-        for i in results_large:
+        for i in results:
             titulo = i[0].metadata["titulo_artigo"]
             conteudo = i[0].metadata["conteudo_artigo"]
             url = i[0].metadata["url_artigo"]
@@ -109,13 +122,14 @@ class SearchState(rx.State):
     def handle_search(self):
         logging.debug(f"[handle_search] Pergunta recebida: {self.user_question}")
         self.is_loading = True
-        self.search_id = str(uuid.uuid4())
         search_start_time = datetime.datetime.now(datetime.timezone.utc)
+        self.search_id = str(uuid.uuid4())
         yield
         self.response = ""
         self.search_results_metadata = []
 
         try:
+            self.choose_embedding_model()
             self.query_pinecone()
             embeddings_results_time = datetime.datetime.now(datetime.timezone.utc)
             logging.debug(f"[handle_search] Resultados da busca: {self.search_results_metadata}")
@@ -166,7 +180,7 @@ class SearchState(rx.State):
             "embeddings_results_at": embeddings_results_time.isoformat(),
             "ia_response_at": ia_response_time.isoformat(),
             "model_used": {
-                "embeddings": "text-embedding-3-large",
+                "embeddings": f"text-embedding-3-{self.selected_model}",
                 "ia": "gpt-4o-mini"
             }
         }

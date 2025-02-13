@@ -1,67 +1,47 @@
 import reflex as rx
+import pandas as pd
 import datetime
 import os
 from dotenv import load_dotenv
 from .supabase_client import supabase_client
 import logging
-import pandas as pd
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DashboardState(rx.State):
+    search_logs: list[dict] = []  # Dados brutos de busca
     total_searches: int = 0
-    searches_by_hour: dict = {}
-    top_articles_df: pd.DataFrame = pd.DataFrame(columns=["Título do Artigo", "Pontuação Ponderada"])
+    top_articles_df: pd.DataFrame = pd.DataFrame()  # DataFrame para top artigos
+    searches_by_hour_df: list[dict] = []  # DataFrame para pesquisas por hora
     is_loading: bool = False
 
     def load_all_data(self):
-        """Método para carregar todas as métricas relevantes do dashboard."""
+        """Carrega todos os dados do Supabase e gera DataFrames necessários."""
         self.is_loading = True
-        yield  # Atualiza a interface enquanto carrega os dados
+        yield
 
-        # Chamando os métodos individuais para cada métrica
-        self.load_total_searches()
-        self.load_searches_by_hour()
-        self.load_top_articles()
-        # self.load_avg_response_time() -> Também depois
+        try:
+            response = supabase_client().table("search_log").select("*").execute()
+            if response.data:
+                self.search_logs = response.data
+                self.total_searches = len(self.search_logs)
+                self.gen_searches_by_hour_df()
+                logging.info(f"Dados carregados: {self.total_searches} registros.")
+            else:
+                self.search_logs = []
+                logging.warning("Nenhum dado encontrado no Supabase.")
+        except Exception as e:
+            logging.error(f"Erro ao carregar dados: {e}")
+            self.search_logs = []
+        finally:
+            self.is_loading = False
 
-        self.is_loading = False
-
-    def load_total_searches(self):
-        """Consulta o número total de pesquisas no Supabase."""
-        response = supabase_client().table("search_log").select("search_id", count="exact").execute()
-        if response.count:
-            self.total_searches = response.count
-        else:
-            self.total_searches = 0
-
-    def load_searches_by_hour(self):
-        """Agrupa o número de pesquisas por hora no Supabase."""
-        response = supabase_client().table("search_log").select("search_at").execute()
-        if response.data:
-            hourly_count = {}
-            for entry in response.data:
-                search_time = datetime.datetime.fromisoformat(entry["search_at"].replace("Z", "+00:00"))
-                hour = search_time.strftime("%Y-%m-%d %H:00")
-                hourly_count[hour] = hourly_count.get(hour, 0) + 1
-            self.searches_by_hour = hourly_count
-        else:
-            self.searches_by_hour = {}
-
-    def load_top_articles(self):
-        """Agrupa e calcula os top 5 artigos mais retornados de forma ponderada e cria um DataFrame."""
-        response = supabase_client().table("search_log").select("embeddings_results").execute()
-        if response.data:
-            article_scores = {}
-            for entry in response.data:
-                embeddings = entry["embeddings_results"]
-                for idx, artigo in enumerate(embeddings):
-                    titulo = artigo["titulo_artigo"]
-                    score = 5 - idx  # Peso decrescente (1º = 5 pontos, 2º = 4, ..., 5º = 1)
-                    article_scores[titulo] = article_scores.get(titulo, 0) + score
-
-            # Ordenar, pegar os 5 artigos com maior pontuação e criar o DataFrame
-            sorted_articles = sorted(article_scores.items(), key=lambda x: x[1], reverse=True)[:5]
-            self.top_articles_df = pd.DataFrame(sorted_articles, columns=["Título do Artigo", "Pontuação Ponderada"])
+    def gen_searches_by_hour_df(self):
+        df = pd.DataFrame(self.search_logs)
+        df["search_at"] = pd.to_datetime(df["search_at"])
+        searches_by_hour = df.groupby(df["search_at"].dt.strftime("%Y-%m-%d %H:00")).size().reset_index(name="pesquisas")
+        searches_by_hour.rename(columns={"search_at": "hora"}, inplace=True)
+        self.searches_by_hour_df = searches_by_hour.to_dict('records')
+        

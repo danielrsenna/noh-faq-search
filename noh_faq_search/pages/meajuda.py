@@ -3,6 +3,17 @@ import reflex as rx
 from ..ui import footer
 from .state import SearchState
 
+def meajuda() -> rx.Component:
+    # Welcome Page (Index)
+    return rx.flex(
+        upper_area(),
+        main(),
+        footer(),
+        direction="column",
+        #background_color="#ffffff",
+        align="center",
+    )
+
 def answer() -> rx.Component:
     return rx.cond(
         SearchState.is_loading,
@@ -226,7 +237,7 @@ def upper_area() -> rx.Component:
         justify="between",
     )
 
-def center() -> rx.Component:
+def main() -> rx.Component:
     return rx.flex(
         answer(),
         rx.callout(
@@ -478,13 +489,3 @@ def center() -> rx.Component:
         align="center",
     )
 
-def meajuda() -> rx.Component:
-    # Welcome Page (Index)
-    return rx.flex(
-        upper_area(),
-        center(),
-        footer(),
-        direction="column",
-        #background_color="#ffffff",
-        align="center",
-    )
