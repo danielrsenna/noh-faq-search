@@ -61,6 +61,7 @@ def main() -> rx.Component:
             response_time_boxplot(),
             direction="row",
             justify="between",
+            width="100%",
         ),
         rx.flex(
             rx.text("Top 5 Artigos Mais Recorrentes", font_size="16px", font_weight="bold"),
@@ -77,8 +78,9 @@ def main() -> rx.Component:
                 ab_testing_bar_chart(),
                 ab_testing_line_chart(),
                 justify="between",
+                width="100%",
             ),
-            #width="100%",
+            width="100%",
             direction="column",
             justify="start",
             spacing="1",
