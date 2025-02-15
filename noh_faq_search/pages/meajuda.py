@@ -44,7 +44,7 @@ def answer() -> rx.Component:
                             ),
                         ),
                         rx.popover.content( 
-                            rx.cond(
+                            rx.cond(    
                                 SearchState.feedback_sent,
                                 rx.text("Nohs agradecemos pelo feedback!", font_size="12px", color="#333333",font_weight="normal"),
                                 rx.flex(

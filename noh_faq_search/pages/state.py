@@ -39,7 +39,7 @@ class SearchState(rx.State):
         self.search_results_metadata = []
         self.search_id = ""
         self.is_loading = False
-        self.feedback_sent: bool = False
+        self.feedback_sent = False
         yield
         
     def set_user_question(self, value: str):
@@ -97,20 +97,20 @@ class SearchState(rx.State):
 
         llm = ChatOpenAI(
             model="gpt-4o-mini",
-            temperature=0.6,
-            max_tokens=None,
-            timeout=None,
-            max_retries=2,
+            temperature=0.4,
+            max_tokens=600,
+            timeout=20,
+            max_retries=3,
         )
 
         system_template = """TAREFA:
             Você é um assistente para pergunta-resposta (Q&A), seu papel é responder dúvidas de visitantes no website da Noh. A Noh é um banco digital que oferece conta financeira para apenas para casais.
-            Como contexto, serão fornecidos 3 artigos da central de ajuda da Noh obtidos via embeddings (RAG), ou seja, serão fornecidos os 3 artigos mais similares à pergunta do usuário. 
+            Como contexto, serão fornecidos 5 artigos da central de ajuda da Noh obtidos via embeddings (RAG), ou seja, serão fornecidos os 5 artigos mais similares à pergunta do usuário. 
             INSTRUÇÕES:
-            Responda EXCLUSIVAMENTE com base nos artigos fornecidos como contexto, NÃO invente informações sobre a conta Noh. Se você achar que os conteúdos dos artigos fornecidos não são suficientes para responder a pergunta do usuário, apenas diga que não é capaz de responder no momento. 
+            Responda EXCLUSIVAMENTE com base nos artigos fornecidos como contexto, em nenhuma hipótese você deve inventar informações sobre a conta Noh ou responder com base no que você tem de conhecimento prévio de outros bancos ou até mesmo da Noh, NÃO invente informações sobre a conta Noh!! Se você achar que os conteúdos dos artigos fornecidos não são suficientes para responder a pergunta do usuário, apenas diga que "Sinto muito, não tenho informações suficientes para responder a essa dúvida no momento". 
             Responda em língua portuguesa. 
             Responda com o mesmo tom de voz dos artigos fornecidos como contexto.
-            Responda de forma concisa e termine com "para mais informações, consulte os artigos abaixo".
+            Responda de forma concisa e direta evitando longas explicações, queremos respostas curtas, mas informativas. Termine sua resposta com "Para mais informações, consulte os artigos abaixo".
 
             Artigos da Central de Ajuda:\n{contexto}"""
 
@@ -122,6 +122,7 @@ class SearchState(rx.State):
     def handle_search(self):
         logging.debug(f"[handle_search] Pergunta recebida: {self.user_question}")
         self.is_loading = True
+        self.feedback_sent = False
         search_start_time = datetime.datetime.now(datetime.timezone.utc)
         self.search_id = str(uuid.uuid4())
         yield
@@ -135,6 +136,8 @@ class SearchState(rx.State):
             logging.debug(f"[handle_search] Resultados da busca: {self.search_results_metadata}")
             self.generate_response()
             ia_response_time = datetime.datetime.now(datetime.timezone.utc)
+            self.is_loading = False
+            yield
             logging.debug(f"[handle_search] Resposta gerada: {self.response}")
             self.insert_log(search_start_time, embeddings_results_time, ia_response_time)
         finally:

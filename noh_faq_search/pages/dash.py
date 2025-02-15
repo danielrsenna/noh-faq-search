@@ -1,6 +1,8 @@
 import reflex as rx
 import pandas as pd
 
+import plotly.express as px
+
 from ..ui import footer
 from .dash_state import DashboardState
 
@@ -51,53 +53,81 @@ def navbar() -> rx.Component:
 
 def main() -> rx.Component:
     return rx.flex(
-        rx.text("Dashboard - Estatísticas de Busca", font_size="2em", padding="1em"),
+        rx.text("Dashboard - Estatísticas de Busca", font_size="16px", font_weight="bold"),
+        rx.text("Bem toscão/simples, só pra ilustrar o que poderíamos fazer com os dados que estão sendo salvos no Supabase", font_size="10px", font_weight="semibold"),
         total_searches_component(),
-        hourly_searches_chart(),
-        #top_articles_table(),
-        rx.text("Tempo Médio Embeddings"),
-        rx.text("Tempo Médio Resposta IA"),  
-        rx.text("Feedbacks Positivos x Negativos"), 
+        rx.flex(
+            minutes_searches_chart(),
+            response_time_boxplot(),
+            direction="row",
+            justify="between",
+        ),
+        rx.flex(
+            rx.text("Top 5 Artigos Mais Recorrentes", font_size="16px", font_weight="bold"),
+            top_articles_table(),
+            #width="100%",
+            direction="column",
+            justify="start",
+            spacing="1",
+        ),
+        rx.flex(
+            rx.text("Experimentação - Teste A/B", font_size="16px", font_weight="bold"),
+            rx.text("Influência do uso de Modelos de Embeddings (Small x Large) na qualidade da Resposta ao Usuário", font_size="14px"),
+            rx.flex(
+                ab_testing_bar_chart(),
+                ab_testing_line_chart(),
+                justify="between",
+            ),
+            #width="100%",
+            direction="column",
+            justify="start",
+            spacing="1",
+        ),
         justify="start", 
         direction="column",
         background_color="#ffffff",
-        padding_top="2em",
+        padding_top="1em",
         width="90%",
-        height="80vh",
+        #height="80vh",
         padding_bottom="2em",
         align="start",
-        spacing="2"
+        spacing="1"
     )
 
 def total_searches_component() -> rx.Component:
     """Componente para exibir o número total de pesquisas."""
     return rx.card(
-        rx.text("Número Total de Pesquisas", font_size="1.5em"),
-        rx.text(f"{DashboardState.total_searches}", font_size="2em", font_weight="bold"),
+        rx.text(f"Número Total de Pesquisas: {DashboardState.total_searches}", font_size="16px"),
         padding="1em",
         background_color="#f5f5f5",
-        border_radius="10px",
-        width="30%",
+        border_radius="5px",
+        #width="30%",
     )
 
-# def top_articles_table() -> rx.Component:
-#     return rx.data_table(
-#             data=DashboardState.top_articles_df,
-#             pagination=False,
-#             search=False,
-#             sort=True,
-#             width="100%",
-#         )
-
-def hourly_searches_chart() -> rx.Component:
-    """Componente para exibir o gráfico de pesquisas por hora usando rx.cond."""
-    return rx.recharts.line_chart(
-            rx.recharts.line(data_key="pesquisas", name="Pesquisas", stroke="#8884d8"),
-            rx.recharts.x_axis(data_key="hora", name="Hora"),
-            rx.recharts.y_axis(name="Número de Pesquisas"),
-            rx.recharts.graphing_tooltip(),
-            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
-            data=DashboardState.searches_by_hour_df,
-            width="50%",
-            height=300,
+def top_articles_table() -> rx.Component:
+    return rx.data_table(
+            data=DashboardState.top_articles_df,
+            pagination=False,
+            search=False,
+            sort=False,
         )
+
+def minutes_searches_chart() -> rx.Component:
+    return rx.center(
+        rx.plotly(data=DashboardState.searches_by_min_fig),
+    )
+
+def response_time_boxplot() -> rx.Component:
+    return rx.center(
+        rx.plotly(data=DashboardState.response_time_fig),
+    )
+
+def ab_testing_bar_chart() -> rx.Component:
+    return rx.center(
+        rx.plotly(data=DashboardState.ab_testing_bar_fig),
+    )
+
+def ab_testing_line_chart() -> rx.Component:
+    return rx.center(
+        rx.plotly(data=DashboardState.ab_testing_line_fig),
+    )
