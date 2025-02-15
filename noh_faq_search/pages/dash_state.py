@@ -48,7 +48,19 @@ class DashboardState(rx.State):
         finally:
             self.is_loading = False
 
-    def gen_searches_by_min(self):
+    # def gen_searches_by_min(self): #por hora
+    #     df = pd.DataFrame(self.search_logs)
+    #     df["search_at"] = pd.to_datetime(df["search_at"])
+    #     searches_by_hour = df.groupby(df["search_at"].dt.strftime("%Y-%m-%d %H:00")).size().reset_index(name="pesquisas")
+    #     searches_by_hour.rename(columns={"search_at": "hora"}, inplace=True)
+    #     fig = px.line(
+    #         searches_by_hour, 
+    #         x="hora", 
+    #         y="pesquisas",
+    #         title="Buscas por Hora",)
+    #     self.searches_by_min_fig = fig
+
+    def gen_searches_by_min(self): #por minuto
         df = pd.DataFrame(self.search_logs)
         df["search_at"] = pd.to_datetime(df["search_at"])
         searches_by_hour = df.groupby(df["search_at"].dt.strftime("%Y-%m-%d %H:%M:00")).size().reset_index(name="pesquisas")
@@ -106,29 +118,43 @@ class DashboardState(rx.State):
         fig.update_layout(yaxis=dict(tickformat=".0f"), showlegend=False)
         self.ab_testing_bar_fig = fig
 
-    def generate_ab_line_fig(self):
+    # def generate_ab_line_fig(self): #por minuto
+    #     df = pd.DataFrame(self.search_logs)
+    #     df["modelo"] = pd.json_normalize(df["model_used"])["embeddings"]
+    #     df["search_at"] = pd.to_datetime(df["search_at"])
+    #     feedback_df = df[df["result_helpful"].notnull()]
+    #     feedback_df["min"] = feedback_df["search_at"].dt.floor("min")
+    #     feedback_trend_df = feedback_df.groupby(["min", "modelo"])["result_helpful"].mean().reset_index()
+    #     feedback_trend_df["feedback_rate"] = feedback_trend_df["result_helpful"] * 100 
+    #     fig = px.line(
+    #         feedback_trend_df,
+    #         x="min",
+    #         y="feedback_rate",
+    #         color="modelo",
+    #         title="Evolução da Taxa de Feedback Positivo por Minuto (%)",
+    #         labels={"feedback_rate": "Taxa de Feedback Positivo (%)", "min": "Minuto", "modelo": "Modelo de Embeddings"},
+    #     )
+    #     fig.update_layout(yaxis=dict(tickformat=".0f"), hovermode="x unified", xaxis_tickformat="%d-%m %H:%M")
+    #     self.ab_testing_line_fig = fig
+
+    def generate_ab_line_fig(self): #por hora
         df = pd.DataFrame(self.search_logs)
         df["modelo"] = pd.json_normalize(df["model_used"])["embeddings"]
         df["search_at"] = pd.to_datetime(df["search_at"])
         feedback_df = df[df["result_helpful"].notnull()]
-        feedback_df["hour"] = feedback_df["search_at"].dt.floor("h")
-        feedback_trend_df = feedback_df.groupby(["hour", "modelo"])["result_helpful"].mean().reset_index()
+        feedback_df["hora"] = feedback_df["search_at"].dt.floor("h")
+        feedback_trend_df = feedback_df.groupby(["hora", "modelo"])["result_helpful"].mean().reset_index()
         feedback_trend_df["feedback_rate"] = feedback_trend_df["result_helpful"] * 100 
         fig = px.line(
             feedback_trend_df,
-            x="hour",
+            x="hora",
             y="feedback_rate",
             color="modelo",
             title="Evolução da Taxa de Feedback Positivo por Hora (%)",
-            labels={"feedback_rate": "Taxa de Feedback Positivo (%)", "hour": "Hora", "modelo": "Modelo de Embeddings"},
+            labels={"feedback_rate": "Taxa de Feedback Positivo (%)", "hora": "Hora", "modelo": "Modelo de Embeddings"},
         )
-        fig.update_layout(yaxis=dict(tickformat=".0f"), hovermode="x unified", xaxis_tickformat="%H:%M")
+        fig.update_layout(yaxis=dict(tickformat=".0f"), hovermode="x unified", xaxis_tickformat="%d-%m %H:%M")
         self.ab_testing_line_fig = fig
-
-
-    
-
-
     
 
 
