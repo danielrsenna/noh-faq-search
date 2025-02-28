@@ -1,11 +1,11 @@
 # noh-faq-search
 
 ### TL;DR
-Criei uma versão para a página de central de ajuda do banco [Noh](https://www.noh.com.br/){:target="_blank"} adicionando a possibilidade de buscar respostas com linguagem natural. A solução usa IA Generativa com RAG (Retrieval-Augmented Generation) para buscar os artigos mais similares à pergunta do usuário e para gerar uma resposta em linguagem natural.
+Criei uma versão para a página de central de ajuda do banco [Noh](https://www.noh.com.br/) adicionando a possibilidade de buscar respostas com linguagem natural. A solução usa IA Generativa com RAG (Retrieval-Augmented Generation) para buscar os artigos mais similares à pergunta do usuário e para gerar uma resposta em linguagem natural.
 
-O site foi feito usando um framework python para webapps chamado [Reflex](reflex.dev){:target="_blank"} e utiliza [Supabase](http://supabase.com/){:target="_blank"} como base de dados por trás. Os embeddings para o RAG estão no [Pinecone](https://www.pinecone.io/){:target="_blank"} e os modelos de IAGen usados foram da [OpenAI](https://openai.com/){:target="_blank"}.
-  - Versão Orginal: [Noh Me Ajuda](https://www.noh.com.br/meajuda){:target="_blank"}
-  - Minha Versão: [Noh Me Ajuda com Busca](https://noh_faq_search-red-grass.reflex.run/){:target="_blank"}
+O site foi feito usando um framework python para webapps chamado [Reflex](reflex.dev) e utiliza [Supabase](http://supabase.com/) como base de dados por trás. Os embeddings para o RAG estão no [Pinecone](https://www.pinecone.io/) e os modelos de IAGen usados foram da [OpenAI](https://openai.com/).
+  - Versão Orginal: [Noh Me Ajuda](https://www.noh.com.br/meajuda)
+  - Minha Versão: [Noh Me Ajuda com Busca](https://noh_faq_search-red-grass.reflex.run/)
 
 
 <details>
